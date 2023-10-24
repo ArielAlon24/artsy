@@ -3,16 +3,22 @@ from models import color
 
 
 class _PixelTable:
-    def __init__(self, width: int, height: int, alingment: int = 4) -> None:
-        self.table = [
-            [Pixel(color=color.BLACK) for _ in range(width)] for _ in range(height)
-        ]
-        self.padding = (alingment - (3 * width) % 4) % 4
+    def __init__(self, width: int, height: int, alignment: int = 4) -> None:
+        self.width = width
+        self.height = height
+        self.row_size = (alignment - (3 * width) % alignment) % alignment + 3 * width
+        self.image_data = bytearray(self.height * self.row_size)
+        for y in range(self.height):
+            for x in range(self.width):
+                self.set_pixel(x, y, Pixel(color=color.BLACK))
+
+    def set_pixel(self, x: int, y: int, pixel: Pixel) -> None:
+        offset = y * self.row_size + x * 3
+        self.image_data[offset : offset + 3] = pixel.make()
+
+    def get_pixel(self, x: int, y: int) -> Pixel:
+        offset = y * self.row_size + x * 3
+        return Pixel.from_bytes(self.image_data[offset : offset + 3])
 
     def make(self) -> bytearray:
-        image_data = bytearray()
-        for row in self.table:
-            for pixel in row:
-                image_data += pixel.make()
-            image_data += bytearray([0] * self.padding)
-        return image_data
+        return self.image_data

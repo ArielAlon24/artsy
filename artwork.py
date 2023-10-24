@@ -3,6 +3,7 @@ from components.dib_header import _DibHeader
 from components.pixel_table import _PixelTable
 
 from models.color import Color
+from models.pixel import Pixel
 from typing import Tuple
 
 
@@ -26,7 +27,7 @@ class Artwork:
 
         x, y = key
         try:
-            return self._pixel_table.table[self.height - y - 1][x]
+            return self._pixel_table.get_pixel(x=x, y=y)
         except IndexError:
             raise IndexError(f"Index out of range: ({x}, {y}).")
 
@@ -36,75 +37,40 @@ class Artwork:
 
         x, y = key
         try:
-            self._pixel_table.table[self.height - y - 1][x].color = value
+            self._pixel_table.set_pixel(
+                x=x, y=self.height - y - 1, pixel=Pixel(color=value)
+            )
         except IndexError:
             raise IndexError(f"Index out of range: ({x}, {y}).")
-
-    def box(
-        self,
-        p0: Tuple[int, int],
-        p1: Tuple[int, int],
-        color: Color,
-        is_filled: bool = True,
-    ) -> None:
-        x0, y0 = p0
-        x1, y1 = p1
-        x0 = max(0, x0)
-        x1 = min(self.width - 1, x1)
-        y0 = max(0, y0)
-        y1 = min(self.height - 1, y1)
-
-        if is_filled:
-            for x in range(x0, x1):
-                for y in range(y0, y1):
-                    self[x, y] = color
-        else:
-            for x in range(x0 + 1, x1 - 1):
-                self[x, y0] = color
-                self[x, y1 - 1] = color
-            for y in range(y0, y1):
-                self[x0, y] = color
-                self[x1 - 1, y] = color
 
     def line(self, p0: Tuple[int, int], p1: Tuple[int, int], color: Color) -> None:
         x0, y0 = p0
         x1, y1 = p1
 
-        # Check if we should loop over y values instead of x
         steep = abs(y1 - y0) > abs(x1 - x0)
 
         if steep:
-            # Swap x and y for both points
             x0, y0 = y0, x0
             x1, y1 = y1, x1
 
-        # Ensure first point is to the left/top of the second
         if x0 > x1:
             x0, x1 = x1, x0
             y0, y1 = y1, y0
 
-        # Check for a vertical line
         if x0 == x1:
             for y in range(min(y0, y1), max(y0, y1) + 1):
                 if steep:
-                    # print(f"(x, y) = ({y}, {x0})")
                     self[y, x0] = color
                 else:
-                    # print(f"(x, y) = ({x0}, {y})")
                     self[x0, y] = color
             return
 
         m = (y0 - y1) / (x0 - x1)
         b = y0 - m * x0
 
-        for x in range(
-            x0, x1 + 1
-        ):  # Note: I've also added "+ 1" to make sure x1 is included.
+        for x in range(x0, x1 + 1):
             y = round(m * x + b)
             if steep:
-                # If steep, set y, x instead of x, y
-                # print(f"(x, y) = ({y}, {x})")
                 self[y, x] = color
             else:
-                # print(f"(x, y) = ({x}, {y})")
                 self[x, y] = color
