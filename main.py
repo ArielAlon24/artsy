@@ -41,13 +41,19 @@ def weird_tuple_generator(a, b):
 
 
 def main() -> None:
-    length = 5_148
+    length = 1000
     artwork = Artwork(width=length, height=length)
-
+    iteration = 0
     for x in range(length):
         for y in range(length):
-            artwork[x, y] = Color(*weird_tuple_generator(x + 1, y + 1))
-
+            v1 = (7 * (x + y) % 1000, 7 * (x - y) % 1000)
+            v2 = (3 * (x + y) % 1000, 3 * (x - y) % 1000)
+            v3 = (9 * (x + y) % 1000, 9 * (x - y) % 1000)
+            color = Color(iteration % 256, iteration % 256, iteration % 256)
+            artwork.line(p0=v1, p1=v2, color=color)
+            artwork.line(p0=v2, p1=v3, color=color)
+            artwork.line(p0=v3, p1=v1, color=color)
+            iteration += 1
     artwork.export("artwork.bmp")
 
 
