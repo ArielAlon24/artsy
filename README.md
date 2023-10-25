@@ -11,7 +11,7 @@ The idea behind *Artsy* is creating art using python scripts. It uses the [bmp](
 
 ```Python
 from artwork import Artwork
-from models.pixel import Pixel
+from models.color import Color
 
 
 def main() -> None:
@@ -19,7 +19,7 @@ def main() -> None:
     artwork = Artwork(width=length, height=length)
     for x in range(length):
         for y in range(length):
-            artwork[x, y] = Pixel(red=x % 255, blue=y % 255, green=0)
+            artwork[x, y] = Color(red=x % 255, blue=y % 255, green=0)
 
     artwork.export("artwork.bmp")
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
 ```Python
 from artwork import Artwork
-from models.pixel import Pixel
+from models.color import Color
 
 
 def main() -> None:
@@ -44,7 +44,7 @@ def main() -> None:
     count = 0
     for x in range(length):
         for y in range(length):
-            artwork[x, y] = Pixel(
+            artwork[x, y] = Color(
 	            red=count % 255, 
 	            green=count % 255, 
 	            blue=count % 255
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
 ```python
 from artwork import Artwork
-from models.pixel import Pixel
+from models.color import Color
 
 
 def main() -> None:

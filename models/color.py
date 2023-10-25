@@ -1,3 +1,7 @@
+from typing import Self
+import struct
+
+
 class Color:
     MAX: int = 255
 
@@ -21,9 +25,33 @@ class Color:
             blue=self.MAX - self.blue,
         )
 
+    def make(self) -> bytes:
+        return bytearray([self.blue, self.green, self.red])
 
-RED: Color = Color(255, 0, 0)
-GREEN: Color = Color(0, 255, 0)
-BLUE: Color = Color(0, 0, 255)
-BLACK: Color = Color(0, 0, 0)
-WHITE: Color = Color(255, 255, 255)
+    @classmethod
+    def from_bytes(self, data: bytes) -> Self:
+        red, green, blue = struct.unpack("BBB", data)
+        return Color(red=red, green=green, blue=blue)
+
+    def __repr__(self) -> str:
+        return f"Color({self.red}, {self.blue}, {self.green})"
+
+    @classmethod
+    def white(self) -> Self:
+        return Color(255, 255, 255)
+
+    @classmethod
+    def black(self) -> Self:
+        return Color(0, 0, 0)
+
+    @classmethod
+    def red(self) -> Self:
+        return Color(255, 0, 0)
+
+    @classmethod
+    def green(self) -> Self:
+        return Color(0, 255, 0)
+
+    @classmethod
+    def blue(self) -> Self:
+        return Color(0, 0, 255)

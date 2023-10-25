@@ -1,4 +1,8 @@
 import struct
+from logging import Logger
+from handlers.logging_handler import LoggingHandler
+
+logger: Logger = LoggingHandler.create_logger(__name__)
 
 
 class _BmpHeader:
@@ -12,6 +16,8 @@ class _BmpHeader:
         self._offset: int = self.HEADER_SIZE
 
     def make(self) -> bytes:
-        return struct.pack(
+        result = struct.pack(
             self.FORMAT, self._type, self._file_size, self._reserved, self._offset
         )
+        logger.debug(f"{self.__class__.__name__} has completed packing.")
+        return result

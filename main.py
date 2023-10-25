@@ -1,38 +1,32 @@
 from artwork import Artwork
 from models.color import Color
-
 import math
 
 
 def main() -> None:
-    width, height = 1000, 1000
-    artwork = Artwork(width=width, height=height)
+    length = 1000
+    artwork = Artwork(width=length, height=length)
 
-    x, y = width // 2, height // 2
+    x0, y0 = length // 2, length // 2
 
-    angle = 0
-    length = 1
-    max_length = (width + height) // 5
-    increment = 1
-    while length < max_length:
-        dx = int(length * math.cos(angle))
-        dy = int(length * math.sin(angle))
-
+    radius = 4 * (length // 2 // 5)
+    color_factor = 90
+    power = -0.5
+    for angle in range(360):
+        print(f"Angle: {angle}")
+        x1 = int(radius * max(math.cos(math.radians(angle)), 0.1) ** power)
+        y1 = int(radius * max(math.sin(math.radians(angle)), 0.1) ** power)
         artwork.line(
-            (x, y),
-            (x + dx, y + dy),
-            Color(
-                int(0.7 * length / max_length * 256),
-                int(0.7 * length / max_length * 256),
-                int(0.7 * length / max_length * 256),
+            p0=(x0, y0),
+            p1=((x0 + x1) % length, (y0 + y1) % length),
+            color=Color(
+                red=int((angle % color_factor / color_factor) * 256),
+                blue=int((angle % color_factor / color_factor) * 256),
+                green=int((angle % color_factor / color_factor) * 256),
             ),
         )
 
-        x, y = x + dx, y + dy
-        angle += increment
-        length += 1
-
-    artwork.export("spiral_artwork.bmp")
+    artwork.export("artwork.bmp")
 
 
 if __name__ == "__main__":

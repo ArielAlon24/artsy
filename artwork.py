@@ -1,9 +1,7 @@
 from components.bmp_header import _BmpHeader
 from components.dib_header import _DibHeader
 from components.pixel_table import _PixelTable
-
 from models.color import Color
-from models.pixel import Pixel
 from typing import Tuple
 
 
@@ -37,9 +35,7 @@ class Artwork:
 
         x, y = key
         try:
-            self._pixel_table.set_pixel(
-                x=x, y=self.height - y - 1, pixel=Pixel(color=value)
-            )
+            self._pixel_table.set_pixel(x=x, y=self.height - y - 1, color=value)
         except IndexError:
             raise IndexError(f"Index out of range: ({x}, {y}).")
 

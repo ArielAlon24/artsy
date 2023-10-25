@@ -1,4 +1,8 @@
 import struct
+from logging import Logger
+from handlers.logging_handler import LoggingHandler
+
+logger: Logger = LoggingHandler.create_logger(__name__)
 
 
 class _DibHeader:
@@ -25,7 +29,7 @@ class _DibHeader:
         self._important_colors = self.IMPORTANT_COLORS
 
     def make(self) -> bytes:
-        return struct.pack(
+        result = struct.pack(
             self.FORMAT,
             self._size,
             self._width,
@@ -39,3 +43,5 @@ class _DibHeader:
             self._palette_colors,
             self._important_colors,
         )
+        logger.debug(f"{self.__class__.__name__} has completed packing.")
+        return result
