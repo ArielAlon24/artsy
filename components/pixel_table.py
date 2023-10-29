@@ -11,7 +11,9 @@ class _PixelTable:
     ) -> None:
         self.width = width
         self.height = height
-        self.row_size = (alignment - (3 * width) % alignment) % alignment + 3 * width
+        self.row_size = (
+            alignment - (3 * self.width) % alignment
+        ) % alignment + 3 * self.width
         self.image_data = bytearray(self.height * self.row_size)
         for y in range(self.height):
             for x in range(self.width):
