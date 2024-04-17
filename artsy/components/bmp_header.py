@@ -1,10 +1,11 @@
 import struct
+from .component import Component
 from ..handlers.logging_handler import LoggingHandler
 
 logger = LoggingHandler.create_logger(__name__)
 
 
-class _BmpHeader:
+class _BmpHeader(Component):
     HEADER_SIZE: int = 54
     FORMAT: str = "<2sI2I"
 
@@ -14,7 +15,7 @@ class _BmpHeader:
         self._reserved: int = 0
         self._offset: int = self.HEADER_SIZE
 
-    def make(self) -> bytes:
+    def __bytes__(self) -> bytes:
         result = struct.pack(
             self.FORMAT, self._type, self._file_size, self._reserved, self._offset
         )

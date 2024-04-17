@@ -1,8 +1,6 @@
 from .handlers.logging_handler import LoggingHandler
-from .components.bmp_header import _BmpHeader
-from .components.dib_header import _DibHeader
-from .components.pixel_table import _PixelTable
-from .models.color import Color
+from .components import _BmpHeader, _DibHeader, _PixelTable
+from .color import Color
 from typing import Tuple
 import time
 
@@ -15,18 +13,24 @@ class Artwork:
     def __init__(self, width: int, height: int) -> None:
         self.width = width
         self.height = height
-        self._bmp_header = _BmpHeader(width=self.width, height=self.height)
-        self._dib_header = _DibHeader(width=self.width, height=self.height)
         self._pixel_table = _PixelTable(width=self.width, height=self.height)
+        self.components = [
+            _BmpHeader(width=self.width, height=self.height),
+            _DibHeader(width=self.width, height=self.height),
+            self._pixel_table,
+        ]
+        self._creation_time = time.perf_counter()
 
     def export(self, path: str) -> None:
         start = time.perf_counter()
         with open(path, "wb") as file:
-            file.write(self._bmp_header.make())
-            file.write(self._dib_header.make())
-            file.write(self._pixel_table.make())
+            for component in self.components:
+                file.write(bytes(component))
+
         end = time.perf_counter()
-        logger.debug(f"Finished exporting '{path}' in Took: {end - start: .4f} sec.")
+        logger.debug(f"Finished exporting '{path}'.")
+        logger.info(f"Drawing took:  \t {end - self._creation_time: .4f} sec.")
+        logger.info(f"Exporting took:\t {end - start: .4f} sec.")
 
     def __getitem__(self, key: Point):
         if not isinstance(key, tuple) or not len(key) == 2:
@@ -34,7 +38,7 @@ class Artwork:
 
         x, y = key
         try:
-            return self._pixel_table.get_pixel(x=x - 1, y=y - 1)
+            return self._pixel_table.get(x=x - 1, y=y - 1)
         except IndexError:
             raise IndexError(f"Index out of range: ({x}, {y}).")
 
@@ -44,7 +48,7 @@ class Artwork:
 
         x, y = key
         try:
-            self._pixel_table.set_pixel(x=x - 1, y=y - 1, color=value)
+            self._pixel_table.set(x=x - 1, y=y - 1, color=value)
         except IndexError:
             raise IndexError(f"Index out of range: ({x}, {y}).")
 
@@ -97,23 +101,58 @@ class Artwork:
                 y += ystep
                 error += dx
 
-    def triangle(self, p0: Point, p1: Point, p2: Point, color: Color) -> None:
-        x0, y0 = p0
-        x1, y1 = p1
-        x2, y2 = p2
+    def polygon(self, *points: Point, color: Color) -> None:
+        if len(points) < 3:
+            raise ValueError("A polygon must have at least 3 points.")
 
-        x_min = min(x0, x1, x2)
-        x_max = max(x0, x1, x2)
-        y_min = min(y0, y1, y2)
-        y_max = max(y0, y1, y2)
+        x_min = min(x for x, _ in points)
+        x_max = max(x for x, _ in points)
+        y_min = min(y for _, y in points)
+        y_max = max(y for _, y in points)
 
         for x in range(x_min, x_max + 1):
             for y in range(y_min, y_max + 1):
-                o0 = (x0 - x) * (y1 - y) - (x1 - x) * (y0 - y)
-                o1 = (x1 - x) * (y2 - y) - (x2 - x) * (y1 - y)
-                o2 = (x2 - x) * (y0 - y) - (x0 - x) * (y2 - y)
+                inside = False
+                j = len(points) - 1
+                for i in range(len(points)):
+                    x0, y0 = points[i]
+                    x1, y1 = points[j]
+                    if (y0 < y <= y1 or y1 < y <= y0) and (x <= max(x0, x1)):
+                        cross = (x1 - x0) * (y - y0) / (y1 - y0) + x0
+                        if x < cross:
+                            inside = not inside
+                    j = i
 
-                if (o0 >= 0 and o1 >= 0 and o2 >= 0) or (
-                    o0 <= 0 and o1 <= 0 and o2 <= 0
-                ):
+                if inside:
                     self[x, y] = color
+
+    def fill(self, color: Color) -> None:
+        for x in range(1, self.width + 1):
+            for y in range(1, self.height + 1):
+                self[x, y] = color
+
+    def boundary(self, *points: Point, color: Color) -> None:
+        if len(points) < 3:
+            raise ValueError("A boundary must have at least 3 points.")
+
+        for i, point in enumerate(points):
+            self.line(point, points[(i + 1) % len(points)], color=color)
+
+    def triangle(
+        self,
+        p0: Point,
+        p1: Point,
+        p2: Point,
+        color: Color,
+        is_filled: bool = True,
+        fill: Color | None = None,
+    ) -> None:
+        if is_filled:
+            self.polygon(p0, p1, p2, color=fill if fill is not None else color)
+
+        self.boundary(p0, p1, p2, color=color)
+
+    def rectangle(
+        self, p0: Point, p1: Point, p2: Point, p3: Point, color: Color
+    ) -> None:
+        self.polygon(p0, p1, p2, p3, color=color)

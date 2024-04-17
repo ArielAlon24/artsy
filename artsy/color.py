@@ -1,23 +1,25 @@
 from __future__ import annotations
 import struct
+from dataclasses import dataclass
+from functools import lru_cache
 
 
+@dataclass(slots=True)
 class Color:
-    __slots__ = ("r", "g", "b")
+    r: int
+    g: int
+    b: int
     MAX: int = 255
 
-    def __init__(self, r: int, g: int, b: int) -> None:
+    def __post_init__(self) -> None:
         if (
-            not (0 <= r <= self.MAX)
-            or not (0 <= g <= self.MAX)
-            or not (0 <= b <= self.MAX)
+            not (0 <= self.r <= self.MAX)
+            or not (0 <= self.g <= self.MAX)
+            or not (0 <= self.b <= self.MAX)
         ):
             raise ValueError(
-                f"Color value must be positive and less than 256. Provided: ({red=}, {green=}, {blue=})."
+                f"Color value must be positive and less than 256. Provided: ({self.r=}, {self.g=}, {self.b=})."
             )
-        self.r = r
-        self.g = g
-        self.b = b
 
     def __add__(self, other: Color) -> Color:
         return Color(
@@ -35,7 +37,7 @@ class Color:
 
     def __mul__(self, scalar):
         if not isinstance(scalar, (int, float)):
-            raise ValueError("Can only multiply RGBColor by a scalar.")
+            raise ValueError("Can only multiply Color by a scalar.")
         return Color(
             r=min(self.MAX, int(self.r * scalar)),
             g=min(self.MAX, int(self.g * scalar)),
@@ -55,8 +57,9 @@ class Color:
     def __repr__(self):
         return f"Color({self.r}, {self.g}, {self.b})"
 
-    def make(self) -> bytes:
-        return bytearray((self.b, self.g, self.r))
+    def __bytes__(self) -> bytes:
+        return struct.pack("BBB", self.b, self.g, self.r)
+        # return bytes((self.b, self.g, self.r))
 
     @classmethod
     def from_bytes(cls, data: bytes) -> Color:
@@ -64,7 +67,7 @@ class Color:
         return Color(r=r, g=g, b=b)
 
     @classmethod
-    def hex(cls, data: str) -> "Color":
+    def hex(cls, data: str) -> Color:
         r, g, b = bytes.fromhex(data.lstrip("#"))
         return cls(r=r, g=g, b=b)
 

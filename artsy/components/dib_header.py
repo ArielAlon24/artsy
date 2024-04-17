@@ -1,10 +1,11 @@
 import struct
+from .component import Component
 from ..handlers.logging_handler import LoggingHandler
 
 logger = LoggingHandler.create_logger(__name__)
 
 
-class _DibHeader:
+class _DibHeader(Component):
     HEADER_SIZE: int = 40
     COLOR_PLANES: int = 1
     COMPRESSION_METHOD: int = 0
@@ -27,7 +28,7 @@ class _DibHeader:
         self._palette_colors = self.PALETTE_COLORS
         self._important_colors = self.IMPORTANT_COLORS
 
-    def make(self) -> bytes:
+    def __bytes__(self) -> bytes:
         result = struct.pack(
             self.FORMAT,
             self._size,
