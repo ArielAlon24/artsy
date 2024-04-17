@@ -3,7 +3,7 @@ import logging
 
 class LoggingHandler:
     LEVEL = logging.DEBUG
-    LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    LOG_FORMAT: str = "[%(levelname)s]\t%(message)s"
 
     @classmethod
     def create_logger(cls, name: str) -> logging.Logger:

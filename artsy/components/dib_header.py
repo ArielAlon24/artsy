@@ -1,8 +1,7 @@
 import struct
-from logging import Logger
-from handlers.logging_handler import LoggingHandler
+from ..handlers.logging_handler import LoggingHandler
 
-logger: Logger = LoggingHandler.create_logger(__name__)
+logger = LoggingHandler.create_logger(__name__)
 
 
 class _DibHeader:

@@ -1,13 +1,12 @@
-from components.bmp_header import _BmpHeader
-from components.dib_header import _DibHeader
-from components.pixel_table import _PixelTable
-from models.color import Color
+from .handlers.logging_handler import LoggingHandler
+from .components.bmp_header import _BmpHeader
+from .components.dib_header import _DibHeader
+from .components.pixel_table import _PixelTable
+from .models.color import Color
 from typing import Tuple
 import time
-from logging import Logger
-from handlers.logging_handler import LoggingHandler
 
-logger: Logger = LoggingHandler.create_logger(__name__)
+logger = LoggingHandler.create_logger(__name__)
 
 Point = Tuple[int, int]
 
@@ -27,7 +26,7 @@ class Artwork:
             file.write(self._dib_header.make())
             file.write(self._pixel_table.make())
         end = time.perf_counter()
-        logger.debug(f"Finished exporting {path}. Took: {end - start} sec.")
+        logger.debug(f"Finished exporting '{path}' in Took: {end - start: .4f} sec.")
 
     def __getitem__(self, key: Point):
         if not isinstance(key, tuple) or not len(key) == 2:
@@ -49,11 +48,11 @@ class Artwork:
         except IndexError:
             raise IndexError(f"Index out of range: ({x}, {y}).")
 
-    def border(self, color: Color) -> None:
-        self.line((1, 1), (self.width, 1), Color.red())
-        self.line((self.width, 1), (self.width, self.height), Color.red())
-        self.line((self.width, self.height), (1, self.height), Color.red())
-        self.line((1, self.height), (1, 1), Color.red())
+    def border(self, color: Color = Color.white()) -> None:
+        self.line((1, 1), (self.width, 1), color)
+        self.line((self.width, 1), (self.width, self.height), color)
+        self.line((self.width, self.height), (1, self.height), color)
+        self.line((1, self.height), (1, 1), color)
 
     def line(self, p0: Point, p1: Point, color: Color) -> None:
         x0, y0 = p0
